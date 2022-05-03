@@ -20,7 +20,15 @@ namespace Business.Concrete
 
         public void Add(Car car)
         {
-            throw new NotImplementedException();
+            if (car.Description.Length>2 && car.DailyPrice>=0)
+            {
+                _carDal.Add(car);
+                Console.WriteLine("aracınız eklenmistir");
+            }
+            else
+            {
+                Console.WriteLine("Araba eklemede hata oldu, lütfen verilen kurallara uyunuz.!!!");
+            }
         }
 
         public List<Car> GetAll()
@@ -30,7 +38,12 @@ namespace Business.Concrete
 
         public List<Car> GetCarsByBrandId(int id)
         {
-            throw new NotImplementedException();
+            return _carDal.GetAll(p => p.BrandId == id);
+        }
+
+        public List<Car> GetCarsByColorId(int id)
+        {
+            return _carDal.GetAll(p => p.ColorId == id);
         }
     }
 }
