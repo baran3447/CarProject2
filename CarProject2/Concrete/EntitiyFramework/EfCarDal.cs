@@ -4,62 +4,37 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using Core.DataAccess.EntityFramework;
 using DataAccess.Abstract;
 using DataAccess.Concrete.EntitiyFramework;
 using Entitis.Concrete;
+using Entitis.DTOs;
 
 namespace DataAccess.Concrete.EntityFramework
 {
-    public class EfCarDal : ICarDal
+    public class EfCarDal : EfEntityRepositoryBase<Car, ReCapDBContext>, ICarDal
     {
-        public void Add(Car entity)
+        public List<CarDetailDto> GetCarDetails()
         {
             using (ReCapDBContext context = new ReCapDBContext())
             {
-                var addedEntity = context.Entry(entity);
-                addedEntity.State = Microsoft.EntityFrameworkCore.EntityState.Added;
-                context.SaveChanges();
-            }
-        }
-
-        public void Delete(Car entity)
-        {
-            using (ReCapDBContext context = new ReCapDBContext())
-            {
-                var deletedEntity = context.Entry(entity);
-                deletedEntity.State = Microsoft.EntityFrameworkCore.EntityState.Deleted;
-                context.SaveChanges();
-            }
-        }
-
-        public Car Get(Expression<Func<Car, bool>> filter)
-        {
-            using (ReCapDBContext context = new ReCapDBContext())
-            {
-                return context.Set<Car>().SingleOrDefault(filter);
+                var result = from c in context.Cars
+                             join b in context.Brands
+                             on c.BrandId equals b.BrandId
+                             join c2 in context.Colors
+                             on c.ColorId equals c2.ColorId
+                             select new CarDetailDto
+                             {
+                                 BrandName = b.BrandName,
+                                 Id = c.Id,
+                                 CarName = c.CarName,
+                                 ColorName = c2.ColorName,
+                                 DailyPrice = c.DailyPrice
+                             };
+                return result.ToList();
 
             }
-        }
-
-        public List<Car> GetAll(Expression<Func<Car, bool>> filter = null)
-        {
-            using (ReCapDBContext context = new ReCapDBContext())
-            {
-                return filter == null
-                    ? context.Set<Car>().ToList()
-                    : context.Set<Car>().Where(filter).ToList();
-
-            }
-        }
-
-        public void Update(Car entity)
-        {
-            using (ReCapDBContext context = new ReCapDBContext())
-            {
-                var updatedEntity = context.Entry(entity);
-                updatedEntity.State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-                context.SaveChanges();
-            }
+            
         }
     }
 }
